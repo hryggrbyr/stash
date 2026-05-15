@@ -1,1103 +1,1364 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#2c3947">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Stash">
-<link rel="manifest" href="manifest.json">
-<title>Stash</title>
-<meta name="theme-color" content="#e8edf2" media="(prefers-color-scheme: light)">
-<style>
-  :where(html, body, div, span, applet, object, iframe, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video) {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    font: inherit;
-    vertical-align: baseline;
-  }
-
-  *, *::before, *::after {
-    box-sizing: border-box;
-  }
-
-  html {
-    color-scheme: light dark;
-    font-size: clamp(0.875rem, 0.95vw, 1rem);
-    line-height: 1.6;
-    min-height: 100%;
-    text-rendering: optimizeLegibility;
-  }
-
-  body {
-    min-height: 100dvh;
-    background: var(--bg);
-    color: var(--text);
-    font-family: system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    overscroll-behavior: none;
-  }
-
-  :root {
-    --bg: #2c3947;
-    --surface: #334a62;
-    --surface2: #2b3d52;
-    --surface-soft: #2c3947;
-    --border: #547a95;
-    --border2: #41667f;
-    --text: #e8edf2;
-    --text-weak: #c9d6df;
-    --text-muted: #9bb0c0;
-    --accent: #547a95;
-    --accent-strong: #6c98b9;
-    --button: #c2a56d;
-    --button-strong: #d4b284;
-    --link: #547a95;
-    --todo: #c2a56d;
-    --note: #c2a56d;
-    --url: #547a95;
-    --danger: #f05f2b;
-    --shadow: 0 18px 48px rgb(20 28 25 / 10%);
-    --radius: 0.25rem;
-    --gap: clamp(1rem, 1.5vw, 1.5rem);
-    --space: clamp(1.25rem, 2vw, 2.25rem);
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
-  }
-
-  @media (prefers-color-scheme: light) {
-    :root {
-      --bg: #e8edf2;
-      --surface: #ffffff;
-      --surface2: #eef3f8;
-      --surface-soft: #d8e4ee;
-      --border: #547a95;
-      --border2: #8faac0;
-      --text: #2c3947;
-      --text-weak: #5f6f80;
-      --text-muted: #7c8d9d;
-      --accent: #547a95;
-      --accent-strong: #6c98b9;
-      --button: #c2a56d;
-      --button-strong: #d4b284;
-      --link: #547a95;
-      --todo: #c2a56d;
-      --note: #c2a56d;
-      --url: #547a95;
-      --danger: #d04b2a;
-    }
-  }
-
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
-
-  :focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 3px;
-  }
-
-  button,
-  input,
-  textarea {
-    font: inherit;
-  }
-
-  button {
-    cursor: pointer;
-  }
-
-  #app {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    min-height: 100dvh;
-    width: 100%;
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 0 clamp(1rem, 4vw, 2rem) calc(6rem + var(--safe-bottom)) clamp(1rem, 4vw, 2rem);
-    gap: var(--space);
-    container-type: inline-size;
-    container-name: app;
-  }
-
-  header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--gap);
-    padding-block-start: 1.5rem;
-  }
-
-  .logo {
-    font-size: clamp(1.4rem, 2vw, 1.8rem);
-    font-weight: 300;
-    font-style: italic;
-    color: var(--accent);
-    letter-spacing: -0.04em;
-  }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-  }
-
-  .count-badge {
-    font-size: 0.95rem;
-    color: var(--text-muted);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .tabs {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.45rem;
-  }
-
-  .tab {
-    min-height: 3rem;
-    border-radius: calc(var(--radius) / 1.2);
-    border: 1px solid transparent;
-    background: var(--surface2);
-    color: var(--text-muted);
-    font-size: 0.95rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 0 0.95rem;
-    display: grid;
-    place-items: center;
-    transition: background 0.2s, color 0.2s, border-color 0.2s;
-  }
-
-  .tab:hover,
-  .tab:focus-visible {
-    color: var(--text);
-    border-color: var(--border);
-  }
-
-  .tab.active {
-    color: var(--text);
-    background: var(--surface);
-    border-color: var(--border2);
-  }
-
-  .tab.active[data-type="url"] { color: var(--url); }
-  .tab.active[data-type="todo"] { color: var(--todo); }
-  .tab.active[data-type="note"] { color: var(--note); }
-
-  .search-wrap {
-    padding-block-end: 0.25rem;
-  }
-
-  .search-input {
-    width: 100%;
-    min-height: 3.2rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 0.9rem 1rem;
-    color: var(--text);
-    font-size: 1rem;
-    transition: border-color 0.2s, background 0.2s;
-  }
-
-  .search-input::placeholder {
-    color: var(--text-muted);
-  }
-
-  .search-input:focus {
-    border-color: var(--accent);
-    background: var(--surface2);
-  }
-
-  .list-wrap {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    min-height: 0;
-    overflow-y: auto;
-    padding-inline: 0.1rem;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .list-wrap::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  .list-wrap::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .list-wrap::-webkit-scrollbar-thumb {
-    background: var(--border2);
-    border-radius: 0.75rem;
-  }
-
-  .item {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    gap: 1rem;
-    align-items: stretch;
-    padding: 1rem;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--surface);
-    transition: border-color 0.2s;
-    min-width: 0;
-    overflow: hidden;
-  }
-
-  .item:hover,
-  .item:focus-within,
-  .item:active {
-    border-color: var(--border2);
-  }
-
-  .item-body {
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    gap: 0.55rem;
-    min-width: 0;
-    min-height: 0;
-    align-self: stretch;
-  }
-
-  .item-type-dot,
-  .todo-check {
-    display: grid;
-    place-items: center;
-    min-width: 2.4rem;
-    min-height: 2.4rem;
-  }
-
-  .item-type-dot {
-    width: 2.4rem;
-    height: 2.4rem;
-    border-radius: 999px;
-    background: var(--accent);
-    overflow: hidden;
-    align-self: start;
-  }
-
-  .item-type-dot.has-favicon {
-    background: transparent;
-  }
-
-  .item-type-dot img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  .item[data-type="url"] .item-type-dot { background: var(--url); }
-  .item[data-type="todo"] .item-type-dot { background: var(--todo); }
-  .item[data-type="note"] .item-type-dot { background: var(--note); }
-
-  .todo-check {
-    border: 1.5px solid var(--border2);
-    border-radius: 0.35rem;
-    background: transparent;
-    transition: border-color 0.2s, background 0.2s;
-    align-self: start;
-  }
-
-  .todo-check:hover,
-  .todo-check:focus-visible {
-    border-color: var(--todo);
-  }
-
-  .todo-check.done {
-    background: var(--todo);
-    border-color: var(--todo);
-  }
-
-  .todo-check.done::after {
-    content: '';
-    width: 0.5rem;
-    height: 0.35rem;
-    border-left: 2px solid #172118;
-    border-bottom: 2px solid #172118;
-    transform: rotate(-45deg);
-  }
-
-  .item-title {
-    font-size: 1rem;
-    font-weight: 600;
-    line-height: 1.4;
-    word-break: break-word;
-  }
-
-  .item-title a {
-    color: var(--link);
-    text-decoration: none;
-  }
-
-  .item-title a:hover {
-    text-decoration: underline;
-  }
-
-  .item-note {
-    color: var(--text-weak);
-    font-size: 0.95rem;
-    line-height: 1.7;
-    white-space: pre-wrap;
-  }
-
-  .item-title code,
-  .item-note code {
-    background: rgba(255,255,255,0.08);
-    color: inherit;
-    padding: 0 0.35rem;
-    border-radius: 0.35rem;
-  }
-
-  .item-note strong,
-  .item-title strong {
-    font-weight: 700;
-  }
-
-  .item-note em,
-  .item-title em {
-    font-style: italic;
-  }
-
-  .item-note a,
-  .item-title a {
-    color: var(--link);
-  }
-
-  .item-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    align-items: center;
-    align-self: end;
-    color: var(--text-muted);
-    font-size: 0.95rem;
-  }
-
-  .item-tag {
-    padding: 0.25rem 0.65rem;
-    border-radius: 0.75rem;
-    background: rgba(136,160,168,0.16);
-  }
-
-  .item-actions {
-    display: grid;
-    gap: 0.6rem;
-    justify-items: end;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity 0.2s, visibility 0.2s;
-  }
-
-  .item:hover .item-actions,
-  .item:focus-within .item-actions,
-  .item:active .item-actions {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-  }
-
-  .btn-icon {
-    min-width: 3rem;
-    min-height: 3rem;
-    border: 1px solid transparent;
-    border-radius: 0.35rem;
-    background: var(--surface2);
-    color: var(--text-muted);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s, color 0.2s, border-color 0.2s;
-  }
-
-  .btn-icon:hover,
-  .btn-icon:focus-visible {
-    background: var(--surface);
-    color: var(--text);
-    border-color: var(--border);
-  }
-
-  .btn-icon.danger:hover,
-  .btn-icon.danger:focus-visible {
-    color: var(--danger);
-  }
-
-  .empty {
-    min-height: 18rem;
-    display: grid;
-    place-items: center;
-    gap: 0.75rem;
-    color: var(--text-muted);
-    text-align: center;
-  }
-
-  .empty-icon {
-    font-size: clamp(2rem, 5vw, 3rem);
-    opacity: 0.45;
-  }
-
-  .empty-text {
-    font-size: 1rem;
-    letter-spacing: 0.04em;
-  }
-
-  .fab {
-    position: fixed;
-    bottom: calc(1rem + var(--safe-bottom));
-    left: clamp(1rem, 4vw, 2rem);
-    z-index: 30;
-    width: 4rem;
-    height: 4rem;
-    border: 1px solid var(--border2);
-    border-radius: 999px;
-    background: var(--button);
-    color: #18200f;
-    box-shadow: var(--shadow);
-    display: grid;
-    place-items: center;
-    font-size: 1.7rem;
-    transition: transform 0.15s, background 0.2s, border-color 0.2s;
-  }
-
-  .fab:hover,
-  .fab:focus-visible {
-    background: var(--button-strong);
-    border-color: var(--button-strong);
-    transform: translateY(-2px);
-  }
-
-  .fab:active {
-    transform: translateY(0);
-  }
-
-  .entry-dialog {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100dvh;
-    max-width: none;
-    max-height: none;
-    margin: 0;
-    padding: 0;
-    border: none;
-    background: transparent;
-    color: var(--text);
-    --dialog-origin-x: 50vw;
-    --dialog-origin-y: 50vh;
-  }
-
-  .entry-dialog::backdrop {
-    background: rgb(14 21 29 / 72%);
-    backdrop-filter: blur(10px);
-    opacity: 0;
-    transition: opacity 220ms ease;
-  }
-
-  .entry-dialog[open] {
-    display: block;
-  }
-
-  .dialog-shell {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    display: grid;
-    grid-template-rows: auto 1fr;
-    background:
-      radial-gradient(circle at top left, rgb(255 255 255 / 8%), transparent 28%),
-      linear-gradient(180deg, var(--surface), var(--surface2));
-    border: 1px solid var(--border2);
-    box-shadow: var(--shadow);
-    overflow: hidden;
-    transform-origin: var(--dialog-origin-x) var(--dialog-origin-y);
-    opacity: 0;
-    transform: scale(0.96);
-  }
-
-  .entry-dialog[open]::backdrop {
-    opacity: 1;
-  }
-
-  .entry-dialog[open] .dialog-shell {
-    animation: dialog-enter 220ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-  }
-
-  .entry-dialog.closing::backdrop {
-    opacity: 0;
-  }
-
-  .entry-dialog.closing .dialog-shell {
-    animation: dialog-exit 180ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  }
-
-  .dialog-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 1rem clamp(1rem, 4vw, 2rem);
-    border-bottom: 1px solid var(--border);
-    background: rgb(0 0 0 / 4%);
-  }
-
-  .dialog-title {
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-  }
-
-  .dialog-close {
-    min-width: 3rem;
-    min-height: 3rem;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: var(--surface2);
-    color: var(--text);
-  }
-
-  .dialog-close:hover,
-  .dialog-close:focus-visible {
-    background: var(--surface);
-    border-color: var(--border2);
-  }
-
-  .input-panel {
-    height: 100%;
-    min-height: 0;
-    overflow: auto;
-    padding: clamp(1rem, 4vw, 2rem);
-    display: grid;
-    gap: 1rem;
-    align-content: start;
-    grid-template-areas:
-      "input"
-      "actions"
-      "note";
-  }
-
-  .input-row {
-    grid-area: input;
-    display: grid;
-    gap: 0.9rem;
-  }
-
-  .input-actions {
-    grid-area: actions;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .note-input-wrap {
-    grid-area: note;
-  }
-
-  .type-toggle {
-    display: flex;
-    gap: 0.35rem;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 0.35rem;
-    padding: 0.25rem;
-  }
-
-  .type-btn {
-    flex: 1;
-    min-height: 3.2rem;
-    border: none;
-    border-radius: 0.35rem;
-    background: transparent;
-    color: var(--text);
-    font-size: 1rem;
-    transition: background 0.2s, color 0.2s;
-  }
-
-  .type-btn:hover,
-  .type-btn:focus-visible {
-    background: var(--surface);
-  }
-
-  .type-btn.active {
-    background: var(--surface);
-  }
-
-  .main-input,
-  .note-input,
-  .search-input {
-    border-radius: var(--radius);
-  }
-
-  .main-input {
-    width: 100%;
-    min-height: 4rem;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    padding: 1rem;
-    font-size: 1rem;
-    color: var(--text);
-    resize: none;
-  }
-
-  .main-input:focus,
-  .note-input:focus {
-    border-color: var(--accent);
-    background: var(--surface);
-  }
-
-  .note-input-wrap {
-    display: none;
-  }
-
-  .note-input-wrap.visible {
-    display: block;
-  }
-
-  .note-input {
-    width: 100%;
-    min-height: 4rem;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    padding: 1rem;
-    color: var(--text-weak);
-    font-size: 0.95rem;
-    resize: vertical;
-  }
-
-  .input-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .hint {
-    font-size: 0.95rem;
-    color: var(--text-muted);
-  }
-
-  .btn-add {
-    min-height: 3.4rem;
-    border: none;
-    border-radius: 0.35rem;
-    padding: 0 1.4rem;
-    background: var(--button);
-    color: #18200f;
-    font-size: 0.95rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    transition: background 0.2s, transform 0.15s;
-  }
-
-  .btn-add:hover,
-  .btn-add:focus-visible {
-    background: var(--button-strong);
-  }
-
-  .btn-add:active {
-    transform: scale(0.98);
-  }
-
-  .favicon {
-    width: 1rem;
-    height: 1rem;
-    border-radius: 0.25rem;
-    margin-right: 0.55rem;
-    opacity: 0.85;
-  }
-
-  .toast {
-    position: fixed;
-    inset-inline: 0;
-    bottom: calc(1rem + var(--safe-bottom));
-    margin-inline: auto;
-    max-width: min(22rem, calc(100% - 2rem));
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    color: var(--text-weak);
-    font-size: 0.95rem;
-    padding: 0.85rem 1rem;
-    border-radius: 0.75rem;
-    text-align: center;
-    opacity: 0;
-    transform: translateY(0);
-    transition: opacity 0.2s, transform 0.2s;
-    pointer-events: none;
-    z-index: 100;
-  }
-
-  .toast.show {
-    opacity: 1;
-    transform: translateY(-0.5rem);
-  }
-
-  @keyframes dialog-enter {
-    from {
-      opacity: 0;
-      transform: scale(0.96);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  @keyframes dialog-exit {
-    from {
-      opacity: 1;
-      transform: scale(1);
-    }
-    to {
-      opacity: 0;
-      transform: scale(0.96);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .fab,
-    .dialog-shell,
-    .entry-dialog::backdrop,
-    .toast,
-    .tab,
-    .btn-icon,
-    .btn-add,
-    .search-input,
-    .type-btn {
-      transition-duration: 0.01ms !important;
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-    }
-
-    .entry-dialog[open] .dialog-shell,
-    .entry-dialog.closing .dialog-shell {
-      animation: none;
-      opacity: 1;
-      transform: none;
-    }
-  }
-
-  @media (min-width: 50rem) {
-    .input-row {
-      grid-template-columns: auto 1fr;
-      align-items: end;
-    }
-
-    .input-actions {
-      justify-content: flex-end;
-    }
-
-    .input-panel {
-      padding-top: 1.75rem;
-    }
-  }
-
-  @media (min-width: 45rem) {
-    .list-wrap {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .input-panel {
-      grid-template-columns: minmax(auto, max-content) minmax(0, 1fr) minmax(auto, max-content);
-      grid-template-areas: "input input actions" "note note note";
-      align-items: end;
-      padding-top: 1.75rem;
-    }
-
-    .input-row {
-      grid-template-columns: auto 1fr;
-      align-items: center;
-    }
-
-    .input-actions {
-      justify-content: flex-end;
-    }
-  }
-
-  @container app (min-width: 70rem) {
-    .list-wrap {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-
-    .item {
-      grid-template-columns: auto minmax(0, 1fr) auto;
-    }
-
-    .item-actions {
-      justify-content: flex-end;
-    }
-  }
-</style>
-</head>
-<body>
-<div id="app">
-
-  <header>
-    <div class="logo">stash</div>
-    <div class="header-right">
-      <span class="count-badge" id="countBadge"></span>
-    </div>
-  </header>
-
-  <nav class="tabs" aria-label="Filter items">
-    <button class="tab active" data-type="all">All</button>
-    <button class="tab" data-type="url">URLs</button>
-    <button class="tab" data-type="todo">Todos</button>
-    <button class="tab" data-type="note">Notes</button>
-  </nav>
-
-  <div class="search-wrap">
-    <label class="sr-only" for="searchInput">Search stash</label>
-    <input type="search" class="search-input" id="searchInput" placeholder="search..." autocomplete="off" spellcheck="false">
-  </div>
-
-  <main class="list-wrap" id="listWrap" aria-live="polite" aria-label="Saved items"></main>
-
-  <button type="button" class="fab" id="openEntryBtn" aria-label="Add item">+</button>
-</div>
-
-<dialog class="entry-dialog" id="entryDialog" aria-labelledby="entryDialogTitle">
-  <div class="dialog-shell">
-    <div class="dialog-header">
-      <div class="dialog-title" id="entryDialogTitle">New entry</div>
-      <button type="button" class="dialog-close" id="closeEntryBtn" aria-label="Close form">✕</button>
-    </div>
-    <form class="input-panel" id="entryForm" autocomplete="off">
-      <div class="input-row">
-        <div class="type-toggle" role="group" aria-label="Choose item type">
-          <button type="button" class="type-btn" data-type="url" title="URL / Bookmark">🔗</button>
-          <button type="button" class="type-btn active" data-type="todo" title="Todo">☐</button>
-          <button type="button" class="type-btn" data-type="note" title="Note">✎</button>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#2c3947" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="Stash" />
+    <link rel="manifest" href="manifest.json" />
+    <title>Stash</title>
+    <meta
+      name="theme-color"
+      content="#e8edf2"
+      media="(prefers-color-scheme: light)"
+    />
+    <style>
+      :where(
+        html,
+        body,
+        div,
+        span,
+        applet,
+        object,
+        iframe,
+        blockquote,
+        pre,
+        a,
+        abbr,
+        acronym,
+        address,
+        big,
+        cite,
+        code,
+        del,
+        dfn,
+        em,
+        img,
+        ins,
+        kbd,
+        q,
+        s,
+        samp,
+        small,
+        strike,
+        strong,
+        sub,
+        sup,
+        tt,
+        var,
+        b,
+        u,
+        i,
+        center,
+        dl,
+        dt,
+        dd,
+        ol,
+        ul,
+        li,
+        fieldset,
+        form,
+        label,
+        legend,
+        table,
+        caption,
+        tbody,
+        tfoot,
+        thead,
+        tr,
+        th,
+        td,
+        article,
+        aside,
+        canvas,
+        details,
+        embed,
+        figure,
+        figcaption,
+        footer,
+        header,
+        hgroup,
+        menu,
+        nav,
+        output,
+        ruby,
+        section,
+        summary,
+        time,
+        mark,
+        audio,
+        video
+      ) {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        font: inherit;
+        vertical-align: baseline;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      html {
+        color-scheme: light dark;
+        font-size: clamp(0.875rem, 0.95vw, 1rem);
+        line-height: 1.6;
+        min-height: 100%;
+        text-rendering: optimizeLegibility;
+      }
+
+      body {
+        min-height: 100dvh;
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        overscroll-behavior: none;
+      }
+
+      :root {
+        --bg: #2c3947;
+        --surface: #334a62;
+        --surface2: #2b3d52;
+        --surface-soft: #2c3947;
+        --border: #547a95;
+        --border2: #41667f;
+        --text: #e8edf2;
+        --text-weak: #c9d6df;
+        --text-muted: #9bb0c0;
+        --accent: #547a95;
+        --accent-strong: #6c98b9;
+        --button: #c2a56d;
+        --button-strong: #d4b284;
+        --link: #547a95;
+        --todo: #c2a56d;
+        --note: #c2a56d;
+        --url: #547a95;
+        --danger: #f05f2b;
+        --shadow: 0 18px 48px rgb(20 28 25 / 10%);
+        --radius: 0.25rem;
+        --gap: clamp(1rem, 1.5vw, 1.5rem);
+        --space: clamp(1.25rem, 2vw, 2.25rem);
+        --safe-bottom: env(safe-area-inset-bottom, 0px);
+        --keyboard-offset: 0px;
+      }
+
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #e8edf2;
+          --surface: #ffffff;
+          --surface2: #eef3f8;
+          --surface-soft: #d8e4ee;
+          --border: #547a95;
+          --border2: #8faac0;
+          --text: #2c3947;
+          --text-weak: #5f6f80;
+          --text-muted: #7c8d9d;
+          --accent: #547a95;
+          --accent-strong: #6c98b9;
+          --button: #c2a56d;
+          --button-strong: #d4b284;
+          --link: #547a95;
+          --todo: #c2a56d;
+          --note: #c2a56d;
+          --url: #547a95;
+          --danger: #d04b2a;
+        }
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+      }
+
+      button,
+      input,
+      textarea {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      #app {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-height: 100dvh;
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0 clamp(1rem, 4vw, 2rem) calc(6rem + var(--safe-bottom))
+          clamp(1rem, 4vw, 2rem);
+        gap: var(--space);
+        container-type: inline-size;
+        container-name: app;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--gap);
+        padding-block-start: 1.5rem;
+      }
+
+      .logo {
+        font-size: clamp(1.4rem, 2vw, 1.8rem);
+        font-weight: 300;
+        font-style: italic;
+        color: var(--accent);
+        letter-spacing: -0.04em;
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+      }
+
+      .count-badge {
+        font-size: 0.95rem;
+        color: var(--text-muted);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .tabs {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.45rem;
+      }
+
+      .tab {
+        min-height: 3rem;
+        border-radius: calc(var(--radius) / 1.2);
+        border: 1px solid transparent;
+        background: var(--surface2);
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 0 0.95rem;
+        display: grid;
+        place-items: center;
+        transition:
+          background 0.2s,
+          color 0.2s,
+          border-color 0.2s;
+      }
+
+      .tab:hover,
+      .tab:focus-visible {
+        color: var(--text);
+        border-color: var(--border);
+      }
+
+      .tab.active {
+        color: var(--text);
+        background: var(--surface);
+        border-color: var(--border2);
+      }
+
+      .tab.active[data-type="url"] {
+        color: var(--url);
+      }
+      .tab.active[data-type="todo"] {
+        color: var(--todo);
+      }
+      .tab.active[data-type="note"] {
+        color: var(--note);
+      }
+
+      .search-wrap {
+        padding-block-end: 0.25rem;
+      }
+
+      .search-input {
+        width: 100%;
+        min-height: 3.2rem;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 0.9rem 1rem;
+        color: var(--text);
+        font-size: 1rem;
+        transition:
+          border-color 0.2s,
+          background 0.2s;
+      }
+
+      .search-input::placeholder {
+        color: var(--text-muted);
+      }
+
+      .search-input:focus {
+        border-color: var(--accent);
+        background: var(--surface2);
+      }
+
+      .list-wrap {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        min-height: 0;
+        overflow-y: auto;
+        padding-inline: 0.1rem;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .list-wrap::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .list-wrap::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .list-wrap::-webkit-scrollbar-thumb {
+        background: var(--border2);
+        border-radius: 0.75rem;
+      }
+
+      .item {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: 1rem;
+        align-items: stretch;
+        padding: 1rem;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface);
+        transition: border-color 0.2s;
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      .item:hover,
+      .item:focus-within,
+      .item:active {
+        border-color: var(--border2);
+      }
+
+      .item-body {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 0.55rem;
+        min-width: 0;
+        min-height: 0;
+        align-self: stretch;
+      }
+
+      .item-type-dot,
+      .todo-check {
+        display: grid;
+        place-items: center;
+        min-width: 2.4rem;
+        min-height: 2.4rem;
+      }
+
+      .item-type-dot {
+        width: 2.4rem;
+        height: 2.4rem;
+        border-radius: 999px;
+        background: var(--accent);
+        overflow: hidden;
+        align-self: start;
+      }
+
+      .item-type-dot.has-favicon {
+        background: transparent;
+      }
+
+      .item-type-dot img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .item[data-type="url"] .item-type-dot {
+        background: var(--url);
+      }
+      .item[data-type="todo"] .item-type-dot {
+        background: var(--todo);
+      }
+      .item[data-type="note"] .item-type-dot {
+        background: var(--note);
+      }
+
+      .todo-check {
+        border: 1.5px solid var(--border2);
+        border-radius: 0.35rem;
+        background: transparent;
+        transition:
+          border-color 0.2s,
+          background 0.2s;
+        align-self: start;
+      }
+
+      .todo-check:hover,
+      .todo-check:focus-visible {
+        border-color: var(--todo);
+      }
+
+      .todo-check.done {
+        background: var(--todo);
+        border-color: var(--todo);
+      }
+
+      .todo-check.done::after {
+        content: "";
+        width: 0.5rem;
+        height: 0.35rem;
+        border-left: 2px solid #172118;
+        border-bottom: 2px solid #172118;
+        transform: rotate(-45deg);
+      }
+
+      .item-title {
+        font-size: 1rem;
+        font-weight: 600;
+        line-height: 1.4;
+        word-break: break-word;
+      }
+
+      .item-title a {
+        color: var(--link);
+        text-decoration: none;
+      }
+
+      .item-title a:hover {
+        text-decoration: underline;
+      }
+
+      .item-note {
+        color: var(--text-weak);
+        font-size: 0.95rem;
+        line-height: 1.7;
+        white-space: pre-wrap;
+      }
+
+      .item-title code,
+      .item-note code {
+        background: rgba(255, 255, 255, 0.08);
+        color: inherit;
+        padding: 0 0.35rem;
+        border-radius: 0.35rem;
+      }
+
+      .item-note strong,
+      .item-title strong {
+        font-weight: 700;
+      }
+
+      .item-note em,
+      .item-title em {
+        font-style: italic;
+      }
+
+      .item-note a,
+      .item-title a {
+        color: var(--link);
+      }
+
+      .item-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+        align-self: end;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+      }
+
+      .item-tag {
+        padding: 0.25rem 0.65rem;
+        border-radius: 0.75rem;
+        background: rgba(136, 160, 168, 0.16);
+      }
+
+      .item-actions {
+        display: grid;
+        gap: 0.6rem;
+        justify-items: end;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition:
+          opacity 0.2s,
+          visibility 0.2s;
+      }
+
+      .item:hover .item-actions,
+      .item:focus-within .item-actions,
+      .item:active .item-actions {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+      }
+
+      .btn-icon {
+        min-width: 3rem;
+        min-height: 3rem;
+        border: 1px solid transparent;
+        border-radius: 0.35rem;
+        background: var(--surface2);
+        color: var(--text-muted);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+          background 0.2s,
+          color 0.2s,
+          border-color 0.2s;
+      }
+
+      .btn-icon:hover,
+      .btn-icon:focus-visible {
+        background: var(--surface);
+        color: var(--text);
+        border-color: var(--border);
+      }
+
+      .btn-icon.danger:hover,
+      .btn-icon.danger:focus-visible {
+        color: var(--danger);
+      }
+
+      .empty {
+        min-height: 18rem;
+        display: grid;
+        place-items: center;
+        gap: 0.75rem;
+        color: var(--text-muted);
+        text-align: center;
+      }
+
+      .empty-icon {
+        font-size: clamp(2rem, 5vw, 3rem);
+        opacity: 0.45;
+      }
+
+      .empty-text {
+        font-size: 1rem;
+        letter-spacing: 0.04em;
+      }
+
+      .fab {
+        position: fixed;
+        bottom: calc(1rem + var(--safe-bottom));
+        left: clamp(1rem, 4vw, 2rem);
+        z-index: 30;
+        width: 4rem;
+        height: 4rem;
+        border: 1px solid var(--border2);
+        border-radius: 999px;
+        background: var(--button);
+        color: #18200f;
+        box-shadow: var(--shadow);
+        display: grid;
+        place-items: center;
+        font-size: 1.7rem;
+        transition:
+          transform 0.15s,
+          background 0.2s,
+          border-color 0.2s;
+      }
+
+      .fab:hover,
+      .fab:focus-visible {
+        background: var(--button-strong);
+        border-color: var(--button-strong);
+        transform: translateY(-2px);
+      }
+
+      .fab:active {
+        transform: translateY(0);
+      }
+
+      .entry-dialog {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100dvh;
+        max-width: none;
+        max-height: none;
+        margin: 0;
+        padding: 0;
+        border: none;
+        background: transparent;
+        color: var(--text);
+        --dialog-origin-x: 50vw;
+        --dialog-origin-y: 50vh;
+        /* make the dialog a positioning container for a bottom sheet */
+        display: block;
+      }
+
+      .entry-dialog::backdrop {
+        background: rgb(14 21 29 / 72%);
+        backdrop-filter: blur(10px);
+        opacity: 0;
+        transition: opacity 220ms ease;
+      }
+
+      .entry-dialog[open] {
+        display: block;
+      }
+
+      .dialog-shell {
+        /* bottom-sheet style: anchored to the bottom of the visual viewport */
+        position: absolute;
+        left: 0.5rem;
+        right: 0.5rem;
+        bottom: calc(var(--safe-bottom) + var(--keyboard-offset));
+        width: auto;
+        max-width: calc(100% - 1rem);
+        max-height: calc(100dvh - 3rem);
+        display: flex;
+        flex-direction: column;
+        background:
+          radial-gradient(
+            circle at top left,
+            rgb(255 255 255 / 8%),
+            transparent 28%
+          ),
+          linear-gradient(180deg, var(--surface), var(--surface2));
+        border: 1px solid var(--border2);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        transform-origin: var(--dialog-origin-x) var(--dialog-origin-y);
+        opacity: 0;
+        transform: scale(0.96);
+        border-radius: 0.5rem;
+      }
+
+      .entry-dialog[open]::backdrop {
+        opacity: 1;
+      }
+
+      .entry-dialog[open] .dialog-shell {
+        animation: dialog-enter 220ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+      }
+
+      .entry-dialog.closing::backdrop {
+        opacity: 0;
+      }
+
+      .entry-dialog.closing .dialog-shell {
+        animation: dialog-exit 180ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+
+      .dialog-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1rem clamp(1rem, 4vw, 2rem);
+        border-bottom: 1px solid var(--border);
+        background: rgb(0 0 0 / 4%);
+      }
+
+      .dialog-title {
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+
+      .dialog-close {
+        min-width: 3rem;
+        min-height: 3rem;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--surface2);
+        color: var(--text);
+      }
+
+      .dialog-close:hover,
+      .dialog-close:focus-visible {
+        background: var(--surface);
+        border-color: var(--border2);
+      }
+
+      .input-panel {
+        /* make the input panel a vertical stack so actions can sit at the bottom */
+        min-height: 0;
+        overflow: auto;
+        padding: clamp(0.75rem, 3.5vw, 1.25rem);
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: stretch;
+      }
+
+      /* ensure the interactive controls sit at the bottom of the panel */
+      .input-row {
+        display: flex;
+        gap: 0.6rem;
+        align-items: flex-start;
+      }
+
+      .input-actions {
+        margin-top: auto; /* push actions to the bottom */
+        display: flex;
+        gap: 0.6rem;
+        flex-direction: column-reverse; /* on small screens, place primary action last so it's reachable */
+        justify-content: flex-end;
+        align-items: stretch;
+      }
+
+      .btn-add {
+        width: 100%;
+      }
+
+      /* on wider screens revert to the previous layout */
+      @media (min-width: 45rem) {
+        .input-panel {
+          padding: clamp(1rem, 4vw, 2rem);
+          display: grid;
+          gap: 1rem;
+          align-content: start;
+          grid-template-areas: "input input actions" "note note note";
+        }
+
+        .input-row {
+          grid-area: input;
+          display: grid;
+          gap: 0.9rem;
+          grid-template-columns: auto 1fr;
+          align-items: center;
+        }
+
+        .input-actions {
+          grid-area: actions;
+          margin-top: 0;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 1rem;
+          justify-content: space-between;
+          align-items: center;
+          flex-direction: row;
+        }
+
+        .btn-add {
+          width: auto;
+          min-width: 10rem;
+        }
+      }
+
+      .input-row {
+        grid-area: input;
+        display: grid;
+        gap: 0.9rem;
+      }
+
+      .input-actions {
+        grid-area: actions;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .note-input-wrap {
+        grid-area: note;
+      }
+
+      .type-toggle {
+        display: flex;
+        gap: 0.35rem;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        border-radius: 0.35rem;
+        padding: 0.25rem;
+      }
+
+      .type-btn {
+        flex: 1;
+        min-height: 3.2rem;
+        border: none;
+        border-radius: 0.35rem;
+        background: transparent;
+        color: var(--text);
+        font-size: 1rem;
+        transition:
+          background 0.2s,
+          color 0.2s;
+      }
+
+      .type-btn:hover,
+      .type-btn:focus-visible {
+        background: var(--surface);
+      }
+
+      .type-btn.active {
+        background: var(--surface);
+      }
+
+      .main-input,
+      .note-input,
+      .search-input {
+        border-radius: var(--radius);
+      }
+
+      .main-input {
+        width: 100%;
+        min-height: 4rem;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        padding: 1rem;
+        font-size: 1rem;
+        color: var(--text);
+        resize: none;
+      }
+
+      .main-input:focus,
+      .note-input:focus {
+        border-color: var(--accent);
+        background: var(--surface);
+      }
+
+      .note-input-wrap {
+        display: none;
+      }
+
+      .note-input-wrap.visible {
+        display: block;
+      }
+
+      .note-input {
+        width: 100%;
+        min-height: 4rem;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        padding: 1rem;
+        color: var(--text-weak);
+        font-size: 0.95rem;
+        resize: vertical;
+      }
+
+      .input-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .hint {
+        font-size: 0.95rem;
+        color: var(--text-muted);
+      }
+
+      .btn-add {
+        min-height: 3.4rem;
+        border: none;
+        border-radius: 0.35rem;
+        padding: 0 1.4rem;
+        background: var(--button);
+        color: #18200f;
+        font-size: 0.95rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        transition:
+          background 0.2s,
+          transform 0.15s;
+      }
+
+      .btn-add:hover,
+      .btn-add:focus-visible {
+        background: var(--button-strong);
+      }
+
+      .btn-add:active {
+        transform: scale(0.98);
+      }
+
+      .favicon {
+        width: 1rem;
+        height: 1rem;
+        border-radius: 0.25rem;
+        margin-right: 0.55rem;
+        opacity: 0.85;
+      }
+
+      .toast {
+        position: fixed;
+        inset-inline: 0;
+        bottom: calc(1rem + var(--safe-bottom));
+        margin-inline: auto;
+        max-width: min(22rem, calc(100% - 2rem));
+        background: var(--surface2);
+        border: 1px solid var(--border2);
+        color: var(--text-weak);
+        font-size: 0.95rem;
+        padding: 0.85rem 1rem;
+        border-radius: 0.75rem;
+        text-align: center;
+        opacity: 0;
+        transform: translateY(0);
+        transition:
+          opacity 0.2s,
+          transform 0.2s;
+        pointer-events: none;
+        z-index: 100;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateY(-0.5rem);
+      }
+
+      @keyframes dialog-enter {
+        from {
+          opacity: 0;
+          transform: scale(0.96);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      @keyframes dialog-exit {
+        from {
+          opacity: 1;
+          transform: scale(1);
+        }
+        to {
+          opacity: 0;
+          transform: scale(0.96);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .fab,
+        .dialog-shell,
+        .entry-dialog::backdrop,
+        .toast,
+        .tab,
+        .btn-icon,
+        .btn-add,
+        .search-input,
+        .type-btn {
+          transition-duration: 0.01ms !important;
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+        }
+
+        .entry-dialog[open] .dialog-shell,
+        .entry-dialog.closing .dialog-shell {
+          animation: none;
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      @media (min-width: 50rem) {
+        .input-row {
+          grid-template-columns: auto 1fr;
+          align-items: end;
+        }
+
+        .input-actions {
+          justify-content: flex-end;
+        }
+
+        .input-panel {
+          padding-top: 1.75rem;
+        }
+      }
+
+      @media (min-width: 45rem) {
+        .list-wrap {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .input-panel {
+          grid-template-columns:
+            minmax(auto, max-content) minmax(0, 1fr)
+            minmax(auto, max-content);
+          grid-template-areas: "input input actions" "note note note";
+          align-items: end;
+          padding-top: 1.75rem;
+        }
+
+        .input-row {
+          grid-template-columns: auto 1fr;
+          align-items: center;
+        }
+
+        .input-actions {
+          justify-content: flex-end;
+        }
+      }
+
+      @container app (min-width: 70rem) {
+        .list-wrap {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .item {
+          grid-template-columns: auto minmax(0, 1fr) auto;
+        }
+
+        .item-actions {
+          justify-content: flex-end;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <div class="logo">stash</div>
+        <div class="header-right">
+          <span class="count-badge" id="countBadge"></span>
         </div>
-        <label class="sr-only" for="mainInput">Write item content</label>
-        <textarea class="main-input" id="mainInput" rows="1" placeholder="paste url or type…" spellcheck="false"></textarea>
+      </header>
+
+      <nav class="tabs" aria-label="Filter items">
+        <button class="tab active" data-type="all">All</button>
+        <button class="tab" data-type="url">URLs</button>
+        <button class="tab" data-type="todo">Todos</button>
+        <button class="tab" data-type="note">Notes</button>
+      </nav>
+
+      <div class="search-wrap">
+        <label class="sr-only" for="searchInput">Search stash</label>
+        <input
+          type="search"
+          class="search-input"
+          id="searchInput"
+          placeholder="search..."
+          autocomplete="off"
+          spellcheck="false"
+        />
       </div>
-      <div class="input-actions">
-        <span class="hint" id="inputHint"></span>
-        <button type="submit" class="btn-add" id="addBtn">Save</button>
+
+      <main
+        class="list-wrap"
+        id="listWrap"
+        aria-live="polite"
+        aria-label="Saved items"
+      ></main>
+
+      <button type="button" class="fab" id="openEntryBtn" aria-label="Add item">
+        +
+      </button>
+    </div>
+
+    <dialog
+      class="entry-dialog"
+      id="entryDialog"
+      aria-labelledby="entryDialogTitle"
+    >
+      <div class="dialog-shell">
+        <div class="dialog-header">
+          <div class="dialog-title" id="entryDialogTitle">New entry</div>
+          <button
+            type="button"
+            class="dialog-close"
+            id="closeEntryBtn"
+            aria-label="Close form"
+          >
+            ✕
+          </button>
+        </div>
+        <form class="input-panel" id="entryForm" autocomplete="off">
+          <div class="input-row">
+            <div class="type-toggle" role="group" aria-label="Choose item type">
+              <button
+                type="button"
+                class="type-btn"
+                data-type="url"
+                title="URL / Bookmark"
+              >
+                🔗
+              </button>
+              <button
+                type="button"
+                class="type-btn active"
+                data-type="todo"
+                title="Todo"
+              >
+                ☐
+              </button>
+              <button
+                type="button"
+                class="type-btn"
+                data-type="note"
+                title="Note"
+              >
+                ✎
+              </button>
+            </div>
+            <label class="sr-only" for="mainInput">Write item content</label>
+            <textarea
+              class="main-input"
+              id="mainInput"
+              rows="1"
+              placeholder="paste url or type…"
+              spellcheck="false"
+            ></textarea>
+          </div>
+          <div class="input-actions">
+            <span class="hint" id="inputHint"></span>
+            <button type="submit" class="btn-add" id="addBtn">Save</button>
+          </div>
+          <div class="note-input-wrap" id="noteInputWrap">
+            <label class="sr-only" for="noteInput"
+              >Optional note or description</label
+            >
+            <textarea
+              class="note-input"
+              id="noteInput"
+              placeholder="optional note / description…"
+            ></textarea>
+          </div>
+        </form>
       </div>
-      <div class="note-input-wrap" id="noteInputWrap">
-        <label class="sr-only" for="noteInput">Optional note or description</label>
-        <textarea class="note-input" id="noteInput" placeholder="optional note / description…"></textarea>
-      </div>
-    </form>
-  </div>
-</dialog>
+    </dialog>
 
-<div class="toast" id="toast"></div>
+    <div class="toast" id="toast"></div>
 
-<script>
-// ── State ──
-let items = JSON.parse(localStorage.getItem('stash_items') || '[]');
-let activeType = 'all';
-let searchQuery = '';
-let inputType = 'todo';
-let editingId = null;
-let entryDialogEl;
-let entryDialogCloseTimer = null;
+    <script>
+      // ── State ──
+      let items = JSON.parse(localStorage.getItem("stash_items") || "[]");
+      let activeType = "all";
+      let searchQuery = "";
+      let inputType = "todo";
+      let editingId = null;
+      let entryDialogEl;
+      let entryDialogCloseTimer = null;
 
-function save() {
-  localStorage.setItem('stash_items', JSON.stringify(items));
-}
+      function save() {
+        localStorage.setItem("stash_items", JSON.stringify(items));
+      }
 
-function setFormType(type) {
-  inputType = type;
-  document.querySelectorAll('.type-btn').forEach(b => {
-    const active = b.dataset.type === type;
-    b.classList.toggle('active', active);
-    b.setAttribute('aria-pressed', active);
-  });
-  updateInputState();
-}
+      function setFormType(type) {
+        inputType = type;
+        document.querySelectorAll(".type-btn").forEach((b) => {
+          const active = b.dataset.type === type;
+          b.classList.toggle("active", active);
+          b.setAttribute("aria-pressed", active);
+        });
+        updateInputState();
+      }
 
-function populateForm(item, triggerEl) {
-  openEntryDialog('edit', triggerEl);
-  setFormType(item.type);
-  const mainInput = document.getElementById('mainInput');
-  const noteInput = document.getElementById('noteInput');
-  const noteWrap = document.getElementById('noteInputWrap');
-  mainInput.value = item.content;
-  noteInput.value = item.note || '';
-  if (item.note) noteWrap.classList.add('visible');
-  editingId = item.id;
-  document.getElementById('addBtn').textContent = 'Update';
-  updateInputState();
-  autoResize();
-  mainInput.focus();
-}
+      function populateForm(item, triggerEl) {
+        openEntryDialog("edit", triggerEl);
+        setFormType(item.type);
+        const mainInput = document.getElementById("mainInput");
+        const noteInput = document.getElementById("noteInput");
+        const noteWrap = document.getElementById("noteInputWrap");
+        mainInput.value = item.content;
+        noteInput.value = item.note || "";
+        if (item.note) noteWrap.classList.add("visible");
+        editingId = item.id;
+        document.getElementById("addBtn").textContent = "Update";
+        updateInputState();
+        autoResize();
+        mainInput.focus();
+      }
 
-function resetFormState() {
-  editingId = null;
-  document.getElementById('addBtn').textContent = 'Save';
-  document.getElementById('entryDialogTitle').textContent = 'New entry';
-}
+      function resetFormState() {
+        editingId = null;
+        document.getElementById("addBtn").textContent = "Save";
+        document.getElementById("entryDialogTitle").textContent = "New entry";
+      }
 
-function setDialogOrigin(triggerEl) {
-  if (!triggerEl || typeof triggerEl.getBoundingClientRect !== 'function') return;
-  const rect = triggerEl.getBoundingClientRect();
-  const x = rect.left + rect.width / 2;
-  const y = rect.top + rect.height / 2;
-  entryDialogEl.style.setProperty('--dialog-origin-x', `${x}px`);
-  entryDialogEl.style.setProperty('--dialog-origin-y', `${y}px`);
-}
+      function setDialogOrigin(triggerEl) {
+        if (!triggerEl || typeof triggerEl.getBoundingClientRect !== "function")
+          return;
+        const rect = triggerEl.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
+        entryDialogEl.style.setProperty("--dialog-origin-x", `${x}px`);
+        entryDialogEl.style.setProperty("--dialog-origin-y", `${y}px`);
+      }
 
-function openEntryDialog(mode = 'new', triggerEl = null) {
-  const title = document.getElementById('entryDialogTitle');
-  title.textContent = mode === 'edit' ? 'Edit entry' : 'New entry';
-  entryDialogEl.classList.remove('closing');
-  if (entryDialogCloseTimer) {
-    clearTimeout(entryDialogCloseTimer);
-    entryDialogCloseTimer = null;
-  }
-  setDialogOrigin(triggerEl);
-  if (!entryDialogEl.open) entryDialogEl.showModal();
-}
+      function openEntryDialog(mode = "new", triggerEl = null) {
+        const title = document.getElementById("entryDialogTitle");
+        title.textContent = mode === "edit" ? "Edit entry" : "New entry";
+        entryDialogEl.classList.remove("closing");
+        if (entryDialogCloseTimer) {
+          clearTimeout(entryDialogCloseTimer);
+          entryDialogCloseTimer = null;
+        }
+        setDialogOrigin(triggerEl);
+        if (!entryDialogEl.open) entryDialogEl.showModal();
+      }
 
-function closeEntryDialog() {
-  if (!entryDialogEl.open || entryDialogEl.classList.contains('closing')) return;
-  entryDialogEl.classList.add('closing');
+      function closeEntryDialog() {
+        if (!entryDialogEl.open || entryDialogEl.classList.contains("closing"))
+          return;
+        entryDialogEl.classList.add("closing");
 
-  const shell = entryDialogEl.querySelector('.dialog-shell');
-  const finishClose = () => {
-    if (entryDialogEl.open) entryDialogEl.close();
-  };
+        const shell = entryDialogEl.querySelector(".dialog-shell");
+        const finishClose = () => {
+          if (entryDialogEl.open) entryDialogEl.close();
+        };
 
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    finishClose();
-    return;
-  }
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+          finishClose();
+          return;
+        }
 
-  const onEnd = e => {
-    if (e.target !== shell) return;
-    finishClose();
-  };
+        const onEnd = (e) => {
+          if (e.target !== shell) return;
+          finishClose();
+        };
 
-  shell.addEventListener('animationend', onEnd, { once: true });
-  entryDialogCloseTimer = window.setTimeout(finishClose, 260);
-}
+        shell.addEventListener("animationend", onEnd, { once: true });
+        entryDialogCloseTimer = window.setTimeout(finishClose, 260);
+      }
 
-// ── Helpers ──
-function isURL(str) {
-  try {
-    const u = new URL(str.trim());
-    return u.protocol === 'http:' || u.protocol === 'https:';
-  } catch { return false; }
-}
+      // ── Helpers ──
+      function isURL(str) {
+        try {
+          const u = new URL(str.trim());
+          return u.protocol === "http:" || u.protocol === "https:";
+        } catch {
+          return false;
+        }
+      }
 
-function getDomain(url) {
-  try { return new URL(url).hostname; } catch { return ''; }
-}
+      function getDomain(url) {
+        try {
+          return new URL(url).hostname;
+        } catch {
+          return "";
+        }
+      }
 
-function getFaviconUrl(url) {
-  const domain = getDomain(url);
-  return domain ? `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64` : '';
-}
+      function getFaviconUrl(url) {
+        const domain = getDomain(url);
+        return domain
+          ? `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`
+          : "";
+      }
 
-function formatDate(ts) {
-  const d = new Date(ts);
-  const now = new Date();
-  const diff = now - d;
-  if (diff < 60000) return 'just now';
-  if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
-  if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
-  if (diff < 604800000) return Math.floor(diff / 86400000) + 'd ago';
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
+      function formatDate(ts) {
+        const d = new Date(ts);
+        const now = new Date();
+        const diff = now - d;
+        if (diff < 60000) return "just now";
+        if (diff < 3600000) return Math.floor(diff / 60000) + "m ago";
+        if (diff < 86400000) return Math.floor(diff / 3600000) + "h ago";
+        if (diff < 604800000) return Math.floor(diff / 86400000) + "d ago";
+        return d.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        });
+      }
 
-function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2000);
-}
+      function toast(msg) {
+        const el = document.getElementById("toast");
+        el.textContent = msg;
+        el.classList.add("show");
+        setTimeout(() => el.classList.remove("show"), 2000);
+      }
 
-// ── Render ──
-function getFiltered() {
-  let list = [...items].reverse();
-  if (activeType !== 'all') list = list.filter(i => i.type === activeType);
-  if (searchQuery) {
-    const q = searchQuery.toLowerCase();
-    list = list.filter(i =>
-      (i.content || '').toLowerCase().includes(q) ||
-      (i.note || '').toLowerCase().includes(q)
-    );
-  }
-  return list;
-}
+      // ── Render ──
+      function getFiltered() {
+        let list = [...items].reverse();
+        if (activeType !== "all")
+          list = list.filter((i) => i.type === activeType);
+        if (searchQuery) {
+          const q = searchQuery.toLowerCase();
+          list = list.filter(
+            (i) =>
+              (i.content || "").toLowerCase().includes(q) ||
+              (i.note || "").toLowerCase().includes(q),
+          );
+        }
+        return list;
+      }
 
-function render() {
-  const list = getFiltered();
-  const wrap = document.getElementById('listWrap');
-  const total = items.length;
-  document.getElementById('countBadge').textContent = total ? `${total} item${total !== 1 ? 's' : ''}` : '';
+      function render() {
+        const list = getFiltered();
+        const wrap = document.getElementById("listWrap");
+        const total = items.length;
+        document.getElementById("countBadge").textContent = total
+          ? `${total} item${total !== 1 ? "s" : ""}`
+          : "";
 
-  if (!list.length) {
-    wrap.innerHTML = `
+        if (!list.length) {
+          wrap.innerHTML = `
       <div class="empty">
-        <div class="empty-icon">${activeType === 'url' ? '🔗' : activeType === 'todo' ? '☐' : activeType === 'note' ? '✎' : '◌'}</div>
-        <div class="empty-text">${searchQuery ? 'no results' : 'nothing here yet'}</div>
+        <div class="empty-icon">${activeType === "url" ? "🔗" : activeType === "todo" ? "☐" : activeType === "note" ? "✎" : "◌"}</div>
+        <div class="empty-text">${searchQuery ? "no results" : "nothing here yet"}</div>
       </div>`;
-    return;
-  }
+          return;
+        }
 
-  wrap.innerHTML = list.map(item => itemHTML(item)).join('');
+        wrap.innerHTML = list.map((item) => itemHTML(item)).join("");
 
-  // bind actions
-  wrap.querySelectorAll('[data-action]').forEach(el => {
-    el.addEventListener('click', e => {
-      e.stopPropagation();
-      const action = el.dataset.action;
-      const id = el.closest('.item').dataset.id;
-      if (action === 'delete') deleteItem(id);
-      if (action === 'toggle') toggleTodo(id);
-      if (action === 'copy') copyItem(id);
-      if (action === 'edit') editItem(id, el);
-    });
-  });
-}
+        // bind actions
+        wrap.querySelectorAll("[data-action]").forEach((el) => {
+          el.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const action = el.dataset.action;
+            const id = el.closest(".item").dataset.id;
+            if (action === "delete") deleteItem(id);
+            if (action === "toggle") toggleTodo(id);
+            if (action === "copy") copyItem(id);
+            if (action === "edit") editItem(id, el);
+          });
+        });
+      }
 
-function itemHTML(item) {
-  const isUrl = item.type === 'url';
-  const isTodo = item.type === 'todo';
-  const domain = isUrl ? getDomain(item.content) : '';
+      function itemHTML(item) {
+        const isUrl = item.type === "url";
+        const isTodo = item.type === "todo";
+        const domain = isUrl ? getDomain(item.content) : "";
 
-  const faviconUrl = isUrl ? (item.favicon || getFaviconUrl(item.content)) : '';
-  const titleContent = isUrl
-    ? `<a href="${escHTML(item.content)}" target="_blank" rel="noopener">${escHTML(item.content)}</a>`
-    : renderMarkdown(item.content);
+        const faviconUrl = isUrl
+          ? item.favicon || getFaviconUrl(item.content)
+          : "";
+        const titleContent = isUrl
+          ? `<a href="${escHTML(item.content)}" target="_blank" rel="noopener">${escHTML(item.content)}</a>`
+          : renderMarkdown(item.content);
 
-  const checkbox = isTodo
-    ? `<button type="button" class="todo-check ${item.done ? 'done' : ''}" data-action="toggle" title="toggle done" aria-label="Toggle completed"></button>`
-    : `<span class="item-type-dot${faviconUrl ? ' has-favicon' : ''}" aria-hidden="true">${faviconUrl ? `<img src="${escHTML(faviconUrl)}" onerror="this.style.display='none'" alt="Favicon for ${escHTML(domain)}">` : ''}</span>`;
+        const checkbox = isTodo
+          ? `<button type="button" class="todo-check ${item.done ? "done" : ""}" data-action="toggle" title="toggle done" aria-label="Toggle completed"></button>`
+          : `<span class="item-type-dot${faviconUrl ? " has-favicon" : ""}" aria-hidden="true">${faviconUrl ? `<img src="${escHTML(faviconUrl)}" onerror="this.style.display='none'" alt="Favicon for ${escHTML(domain)}">` : ""}</span>`;
 
-  return `
-    <article class="item ${item.done ? 'done' : ''}" data-type="${item.type}" data-id="${item.id}" aria-labelledby="item-${item.id}-title">
+        return `
+    <article class="item ${item.done ? "done" : ""}" data-type="${item.type}" data-id="${item.id}" aria-labelledby="item-${item.id}-title">
       ${checkbox}
       <div class="item-body">
         <h2 id="item-${item.id}-title" class="item-title">${titleContent}</h2>
-        ${item.note ? `<p class="item-note">${renderMarkdown(item.note)}</p>` : ''}
+        ${item.note ? `<p class="item-note">${renderMarkdown(item.note)}</p>` : ""}
         <div class="item-meta">
           <time datetime="${new Date(item.ts).toISOString()}" class="item-date">${formatDate(item.ts)}</time>
           <span class="item-tag ${item.type}">${item.type}</span>
-          ${domain ? `<span class="item-date">${escHTML(domain)}</span>` : ''}
+          ${domain ? `<span class="item-date">${escHTML(domain)}</span>` : ""}
         </div>
       </div>
       <div class="item-actions">
@@ -1106,274 +1367,311 @@ function itemHTML(item) {
         <button type="button" class="btn-icon danger" data-action="delete" title="delete" aria-label="Delete item">✕</button>
       </div>
     </article>`;
-}
+      }
 
-function escHTML(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
+      function escHTML(str) {
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
 
-function renderMarkdown(text) {
-  if (!text) return '';
-  const escaped = escHTML(text);
-  const code = escaped.replace(/`([^`]+)`/g, '<code>$1</code>');
-  const link = code.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-  const bold = link.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  const italic = bold.replace(/\*(.+?)\*/g, '<em>$1</em>');
-  return italic.replace(/\n/g, '<br>');
-}
+      function renderMarkdown(text) {
+        if (!text) return "";
+        const escaped = escHTML(text);
+        const code = escaped.replace(/`([^`]+)`/g, "<code>$1</code>");
+        const link = code.replace(
+          /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/gi,
+          '<a href="$2" target="_blank" rel="noopener">$1</a>',
+        );
+        const bold = link.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+        const italic = bold.replace(/\*(.+?)\*/g, "<em>$1</em>");
+        return italic.replace(/\n/g, "<br>");
+      }
 
-// ── Actions ──
-function addItem() {
-  const content = document.getElementById('mainInput').value.trim();
-  const note = document.getElementById('noteInput').value.trim();
-  if (!content) return;
+      // ── Actions ──
+      function addItem() {
+        const content = document.getElementById("mainInput").value.trim();
+        const note = document.getElementById("noteInput").value.trim();
+        if (!content) return;
 
-  // auto-detect URL
-  let type = inputType;
-  if (type === 'url' && !isURL(content) && inputType === 'url') {
-    const withProtocol = 'https://' + content;
-    if (isURL(withProtocol)) {
-      // it was a URL without protocol, fix it
-    } else {
-      type = 'note';
-    }
-  }
+        // auto-detect URL
+        let type = inputType;
+        if (type === "url" && !isURL(content) && inputType === "url") {
+          const withProtocol = "https://" + content;
+          if (isURL(withProtocol)) {
+            // it was a URL without protocol, fix it
+          } else {
+            type = "note";
+          }
+        }
 
-  const finalContent = (inputType === 'url' && isURL('https://' + content) && !isURL(content))
-    ? 'https://' + content
-    : content;
+        const finalContent =
+          inputType === "url" && isURL("https://" + content) && !isURL(content)
+            ? "https://" + content
+            : content;
 
-  if (editingId) {
-    const existing = items.find(i => i.id === editingId);
-    if (existing) {
-      existing.type = type;
-      existing.content = finalContent;
-      existing.note = note;
-      existing.done = existing.done || false;
-      existing.favicon = type === 'url' ? getFaviconUrl(finalContent) : '';
-      save();
-      resetFormState();
-      document.getElementById('mainInput').value = '';
-      document.getElementById('noteInput').value = '';
-      autoResize();
+        if (editingId) {
+          const existing = items.find((i) => i.id === editingId);
+          if (existing) {
+            existing.type = type;
+            existing.content = finalContent;
+            existing.note = note;
+            existing.done = existing.done || false;
+            existing.favicon =
+              type === "url" ? getFaviconUrl(finalContent) : "";
+            save();
+            resetFormState();
+            document.getElementById("mainInput").value = "";
+            document.getElementById("noteInput").value = "";
+            autoResize();
+            render();
+            closeEntryDialog();
+            toast("updated");
+            return;
+          }
+        }
+
+        const item = {
+          id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+          type,
+          content: finalContent,
+          note,
+          ts: Date.now(),
+          done: false,
+          favicon: type === "url" ? getFaviconUrl(finalContent) : "",
+        };
+
+        items.push(item);
+        save();
+
+        document.getElementById("mainInput").value = "";
+        document.getElementById("noteInput").value = "";
+        autoResize();
+        render();
+        closeEntryDialog();
+        toast("saved");
+      }
+
+      function editItem(id, triggerEl) {
+        const item = items.find((i) => i.id === id);
+        if (!item) return;
+        populateForm(item, triggerEl);
+      }
+
+      function deleteItem(id) {
+        items = items.filter((i) => i.id !== id);
+        save();
+        render();
+        toast("deleted");
+      }
+
+      function toggleTodo(id) {
+        const item = items.find((i) => i.id === id);
+        if (item) {
+          item.done = !item.done;
+          save();
+          render();
+        }
+      }
+
+      function copyItem(id) {
+        const item = items.find((i) => i.id === id);
+        if (!item) return;
+        navigator.clipboard
+          .writeText(item.content)
+          .then(() => toast("copied!"));
+      }
+
+      // ── Input type toggle ──
+      document.querySelectorAll(".type-btn").forEach((btn) => {
+        btn.addEventListener("click", () => setFormType(btn.dataset.type));
+      });
+
+      function updateInputState() {
+        const inp = document.getElementById("mainInput");
+        const noteWrap = document.getElementById("noteInputWrap");
+        const hint = document.getElementById("inputHint");
+
+        if (inputType === "url") {
+          inp.placeholder = "paste url or domain…";
+          noteWrap.classList.remove("visible");
+          hint.textContent = "";
+        } else if (inputType === "todo") {
+          inp.placeholder = "todo item…";
+          noteWrap.classList.add("visible");
+          hint.textContent = "";
+        } else {
+          inp.placeholder = "write a note…";
+          noteWrap.classList.add("visible");
+          hint.textContent = "";
+        }
+      }
+
+      // ── Tabs ──
+      document.querySelectorAll(".tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          document
+            .querySelectorAll(".tab")
+            .forEach((t) => t.classList.remove("active"));
+          tab.classList.add("active");
+          activeType = tab.dataset.type;
+          render();
+        });
+      });
+
+      // ── Search ──
+      document.getElementById("searchInput").addEventListener("input", (e) => {
+        searchQuery = e.target.value;
+        render();
+      });
+
+      // ── Dialog controls ──
+      entryDialogEl = document.getElementById("entryDialog");
+
+      document.getElementById("openEntryBtn").addEventListener("click", () => {
+        resetFormState();
+        document.getElementById("mainInput").value = "";
+        document.getElementById("noteInput").value = "";
+        document.getElementById("noteInputWrap").classList.remove("visible");
+        setFormType("todo");
+        updateInputState();
+        autoResize();
+        openEntryDialog("new", document.getElementById("openEntryBtn"));
+        document.getElementById("mainInput").focus();
+      });
+
+      document.getElementById("closeEntryBtn").addEventListener("click", () => {
+        closeEntryDialog();
+      });
+
+      entryDialogEl.addEventListener("click", (e) => {
+        if (e.target === entryDialogEl) closeEntryDialog();
+      });
+
+      entryDialogEl.addEventListener("cancel", (e) => {
+        e.preventDefault();
+        closeEntryDialog();
+      });
+
+      entryDialogEl.addEventListener("close", () => {
+        entryDialogEl.classList.remove("closing");
+        if (entryDialogCloseTimer) {
+          clearTimeout(entryDialogCloseTimer);
+          entryDialogCloseTimer = null;
+        }
+        resetFormState();
+        document.getElementById("mainInput").value = "";
+        document.getElementById("noteInput").value = "";
+        document.getElementById("noteInputWrap").classList.remove("visible");
+        setFormType("todo");
+        updateInputState();
+        autoResize();
+      });
+
+      // ── Input events ──
+      const mainInput = document.getElementById("mainInput");
+
+      mainInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          addItem();
+        }
+        if (e.key === "Tab" && inputType === "url") {
+          e.preventDefault();
+          document.getElementById("noteInputWrap").classList.toggle("visible");
+          if (
+            document
+              .getElementById("noteInputWrap")
+              .classList.contains("visible")
+          ) {
+            document.getElementById("noteInput").focus();
+          }
+        }
+      });
+
+      mainInput.addEventListener("input", autoResize);
+
+      function autoResize() {
+        mainInput.style.height = "auto";
+        mainInput.style.height = Math.min(mainInput.scrollHeight, 120) + "px";
+      }
+
+      // Handle paste — auto-detect URLs and switch type
+      mainInput.addEventListener("paste", (e) => {
+        setTimeout(() => {
+          const val = mainInput.value.trim();
+          if (isURL(val) && inputType !== "url") {
+            setFormType("url");
+          }
+        }, 0);
+      });
+
+      const entryForm = document.getElementById("entryForm");
+      entryForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        addItem();
+      });
+
+      // ── Web Share Target (if supported) ──
+      function applyShareTargetParams() {
+        const params = new URLSearchParams(location.search);
+        const sharedUrl = params.get("shareUrl");
+        const sharedText = params.get("shareText");
+        const sharedTitle = params.get("shareTitle");
+        if (!sharedUrl) return;
+
+        mainInput.value = sharedUrl;
+        setFormType("url");
+        openEntryDialog("new");
+
+        if (sharedText || sharedTitle) {
+          document.getElementById("noteInputWrap").classList.add("visible");
+          document.getElementById("noteInput").value = [sharedTitle, sharedText]
+            .filter(Boolean)
+            .join(" ")
+            .trim();
+        }
+
+        updateInputState();
+        autoResize();
+        mainInput.focus();
+        history.replaceState({}, "", location.pathname);
+      }
+
+      if ("serviceWorker" in navigator) {
+        applyShareTargetParams();
+      }
+
+      // ── SW Registration ──
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      }
+
+      // ── Visual viewport / keyboard handling (keep bottom sheet above on-screen keyboard)
+      function updateKeyboardOffset() {
+        const vv = window.visualViewport;
+        const k = vv ? Math.max(0, window.innerHeight - vv.height) : 0;
+        document.documentElement.style.setProperty(
+          "--keyboard-offset",
+          k + "px",
+        );
+      }
+
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", updateKeyboardOffset);
+        window.visualViewport.addEventListener("scroll", updateKeyboardOffset);
+      }
+      window.addEventListener("resize", updateKeyboardOffset);
+      updateKeyboardOffset();
+
+      // ── Init ──
+      updateInputState();
       render();
-      closeEntryDialog();
-      toast('updated');
-      return;
-    }
-  }
 
-  const item = {
-    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-    type,
-    content: finalContent,
-    note,
-    ts: Date.now(),
-    done: false,
-    favicon: type === 'url' ? getFaviconUrl(finalContent) : ''
-  };
-
-  items.push(item);
-  save();
-
-  document.getElementById('mainInput').value = '';
-  document.getElementById('noteInput').value = '';
-  autoResize();
-  render();
-  closeEntryDialog();
-  toast('saved');
-}
-
-function editItem(id, triggerEl) {
-  const item = items.find(i => i.id === id);
-  if (!item) return;
-  populateForm(item, triggerEl);
-}
-
-function deleteItem(id) {
-  items = items.filter(i => i.id !== id);
-  save();
-  render();
-  toast('deleted');
-}
-
-function toggleTodo(id) {
-  const item = items.find(i => i.id === id);
-  if (item) { item.done = !item.done; save(); render(); }
-}
-
-function copyItem(id) {
-  const item = items.find(i => i.id === id);
-  if (!item) return;
-  navigator.clipboard.writeText(item.content).then(() => toast('copied!'));
-}
-
-// ── Input type toggle ──
-document.querySelectorAll('.type-btn').forEach(btn => {
-  btn.addEventListener('click', () => setFormType(btn.dataset.type));
-});
-
-function updateInputState() {
-  const inp = document.getElementById('mainInput');
-  const noteWrap = document.getElementById('noteInputWrap');
-  const hint = document.getElementById('inputHint');
-
-  if (inputType === 'url') {
-    inp.placeholder = 'paste url or domain…';
-    noteWrap.classList.remove('visible');
-    hint.textContent = '';
-  } else if (inputType === 'todo') {
-    inp.placeholder = 'todo item…';
-    noteWrap.classList.add('visible');
-    hint.textContent = '';
-  } else {
-    inp.placeholder = 'write a note…';
-    noteWrap.classList.add('visible');
-    hint.textContent = '';
-  }
-}
-
-// ── Tabs ──
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    activeType = tab.dataset.type;
-    render();
-  });
-});
-
-// ── Search ──
-document.getElementById('searchInput').addEventListener('input', e => {
-  searchQuery = e.target.value;
-  render();
-});
-
-// ── Dialog controls ──
-entryDialogEl = document.getElementById('entryDialog');
-
-document.getElementById('openEntryBtn').addEventListener('click', () => {
-  resetFormState();
-  document.getElementById('mainInput').value = '';
-  document.getElementById('noteInput').value = '';
-  document.getElementById('noteInputWrap').classList.remove('visible');
-  setFormType('todo');
-  updateInputState();
-  autoResize();
-  openEntryDialog('new', document.getElementById('openEntryBtn'));
-  document.getElementById('mainInput').focus();
-});
-
-document.getElementById('closeEntryBtn').addEventListener('click', () => {
-  closeEntryDialog();
-});
-
-entryDialogEl.addEventListener('click', e => {
-  if (e.target === entryDialogEl) closeEntryDialog();
-});
-
-entryDialogEl.addEventListener('cancel', e => {
-  e.preventDefault();
-  closeEntryDialog();
-});
-
-entryDialogEl.addEventListener('close', () => {
-  entryDialogEl.classList.remove('closing');
-  if (entryDialogCloseTimer) {
-    clearTimeout(entryDialogCloseTimer);
-    entryDialogCloseTimer = null;
-  }
-  resetFormState();
-  document.getElementById('mainInput').value = '';
-  document.getElementById('noteInput').value = '';
-  document.getElementById('noteInputWrap').classList.remove('visible');
-  setFormType('todo');
-  updateInputState();
-  autoResize();
-});
-
-// ── Input events ──
-const mainInput = document.getElementById('mainInput');
-
-mainInput.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    addItem();
-  }
-  if (e.key === 'Tab' && inputType === 'url') {
-    e.preventDefault();
-    document.getElementById('noteInputWrap').classList.toggle('visible');
-    if (document.getElementById('noteInputWrap').classList.contains('visible')) {
-      document.getElementById('noteInput').focus();
-    }
-  }
-});
-
-mainInput.addEventListener('input', autoResize);
-
-function autoResize() {
-  mainInput.style.height = 'auto';
-  mainInput.style.height = Math.min(mainInput.scrollHeight, 120) + 'px';
-}
-
-// Handle paste — auto-detect URLs and switch type
-mainInput.addEventListener('paste', e => {
-  setTimeout(() => {
-    const val = mainInput.value.trim();
-    if (isURL(val) && inputType !== 'url') {
-      setFormType('url');
-    }
-  }, 0);
-});
-
-const entryForm = document.getElementById('entryForm');
-entryForm.addEventListener('submit', e => {
-  e.preventDefault();
-  addItem();
-});
-
-// ── Web Share Target (if supported) ──
-function applyShareTargetParams() {
-  const params = new URLSearchParams(location.search);
-  const sharedUrl = params.get('shareUrl');
-  const sharedText = params.get('shareText');
-  const sharedTitle = params.get('shareTitle');
-  if (!sharedUrl) return;
-
-  mainInput.value = sharedUrl;
-  setFormType('url');
-  openEntryDialog('new');
-
-  if (sharedText || sharedTitle) {
-    document.getElementById('noteInputWrap').classList.add('visible');
-    document.getElementById('noteInput').value = [sharedTitle, sharedText].filter(Boolean).join(' ').trim();
-  }
-
-  updateInputState();
-  autoResize();
-  mainInput.focus();
-  history.replaceState({}, '', location.pathname);
-}
-
-if ('serviceWorker' in navigator) {
-  applyShareTargetParams();
-}
-
-// ── SW Registration ──
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(() => {});
-}
-
-// ── Init ──
-updateInputState();
-render();
-
-// Refresh dates every minute
-setInterval(render, 60000);
-</script>
-</body>
+      // Refresh dates every minute
+      setInterval(render, 60000);
+    </script>
+  </body>
 </html>
