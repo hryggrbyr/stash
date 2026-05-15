@@ -129,7 +129,7 @@
         min-height: 100dvh;
         background: var(--bg);
         color: var(--text);
-        font-family: system-ui, sans-serif;
+        font-family: monospace;
         -webkit-font-smoothing: antialiased;
         overscroll-behavior: none;
       }
@@ -623,6 +623,7 @@
         --dialog-origin-y: 50vh;
         /* make the dialog a positioning container for a bottom sheet */
         display: block;
+        pointer-events: none; /* Don't block interaction when closed */
       }
 
       .entry-dialog::backdrop {
@@ -634,6 +635,7 @@
 
       .entry-dialog[open] {
         display: block;
+        pointer-events: initial;
       }
 
       .dialog-shell {
