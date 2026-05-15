@@ -49,9 +49,9 @@ async function handleShareTarget(request) {
     const shareUrl = formData.get("url") || "";
     const shareText = formData.get("text") || "";
     const shareTitle = formData.get("title") || "";
-    const redirectUrl = `/index.html?shareUrl=${encodeURIComponent(shareUrl)}&shareText=${encodeURIComponent(shareText)}&shareTitle=${encodeURIComponent(shareTitle)}`;
+    const redirectUrl = `/stash/index.html?shareUrl=${encodeURIComponent(shareUrl)}&shareText=${encodeURIComponent(shareText)}&shareTitle=${encodeURIComponent(shareTitle)}`;
     return Response.redirect(redirectUrl, 303);
   } catch (err) {
-    return Response.redirect("/index.html", 303);
+    return Response.redirect("/stash/index.html", 303);
   }
 }
